@@ -1,0 +1,37 @@
+.news-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.news-table th, .news-table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.news-table th {
+    background-color: #f4f4f4;
+}
+
+.news-item {
+    display: flex;
+    align-items: center;
+}
+
+.news-image {
+    width: 100px;
+    height: auto;
+    margin-right: 10px;
+}
+
+.news-headline {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+.news-headline:hover {
+    text-decoration: underline;
+}
