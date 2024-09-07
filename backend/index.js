@@ -1,46 +1,55 @@
-const axios = require("axios");
+const express = require('express');
+const mongoose = require('mongoose');
+const connectDB = require('./config/db');
+const News = require('./models/news'); // Import the News model
+const Newspaper = require('./models/newspapers'); // Import the News model
 
-const cheerio = require("cheerio");
+const cors = require('cors');
+const app = express();
 
-const fs = require("fs");
+connectDB();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cors());
 
+app.get('/', (req, res) => {
+    res.send('Welcome to the News API!');
+});
 
-const url = "https://www.thehindu.com/latest-news/";
-
-const fetchLatestNews = async () => {
+// Route to get all news items
+app.get('/news', async (req, res) => {
     try {
-        const response = await axios.get(url); // Await the promise here
-        const html = response.data;
-        const $ = cheerio.load(html);
+        const { source, date } = req.query;
 
-        const ulElement = $('ul.timeline-with-img')
-        fs.writeFileSync('li.html', ulElement.html());
-
-        const newsItems = [] ;
-
-        ulElement.find('li').each((index, element) => {
-
-            const location = $(element).find('.label a').text().trim();
-            const headline = $(element).find('h3.title a').text().trim();
-            const articleLink = $(element).find('h3.title a').attr('href');
-            const imageLink = $(element).find('.picture img').attr('src') || 'No image available';
-            const publishedDate = $(element).find('.news-time').attr('data-published');
-
-            newsItems.push({
-                location,
-                headline,
-                articleLink,
-                imageLink,
-                publishedDate
-            });
-        });
-
-          fs.writeFileSync('data1.json' , JSON.stringify(newsItems)); 
-
+        console.log( { source, date });
+        const query = {
+            source: source,
+            publishedDate: {
+                $gte: new Date(date + 'T00:00:00.000Z'),
+                $lt: new Date(date + 'T23:59:59.999Z')
+            }
+        };
+        const newsItems = await News.find(query);
+        res.json(newsItems);
     } catch (error) {
-        console.error("Error", error);
+        res.status(500).json({ message: 'Server Error' });
     }
-};
+});
 
-fetchLatestNews();
+
+app.get('/newspapers', async (req, res) => {
+    try {
+       
+        const newsItems = await Newspaper.find();
+        res.json(newsItems);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
